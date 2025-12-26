@@ -3,11 +3,8 @@ import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../providers/product_provider.dart';
 
-// Ürün ekleme ve düzenleme işlemlerini tek bir form üzerinden yöneteceğiz.
 class ProductFormScreen extends StatefulWidget {
-  // Eğer bu değişken dolu gelirse 'Düzenleme' modundayız demektir.
   final Product? product;
-  // Arama sonucunda bulunamayan bir barkod ile gelinmişse buraya aktarılır.
   final String? barcode;
 
   const ProductFormScreen({super.key, this.product, this.barcode});
@@ -17,10 +14,8 @@ class ProductFormScreen extends StatefulWidget {
 }
 
 class _ProductFormScreenState extends State<ProductFormScreen> {
-  // Formun durumunu ve validasyonunu (validation) kontrol etmek için anahtar.
   final _formKey = GlobalKey<FormState>();
 
-  // Girdi alanlarını kontrol etmek için controller nesneleri.
   late TextEditingController _barcodeController;
   late TextEditingController _nameController;
   late TextEditingController _categoryController;
@@ -31,7 +26,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   @override
   void initState() {
     super.initState();
-    // Gelen veriye göre controller'ları ilklendiriyoruz (initialization).
     _barcodeController = TextEditingController(text: widget.product?.barcodeNo ?? widget.barcode ?? "");
     _nameController = TextEditingController(text: widget.product?.productName ?? "");
     _categoryController = TextEditingController(text: widget.product?.category ?? "");
@@ -40,17 +34,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _stockController = TextEditingController(text: widget.product?.stockInfo?.toString() ?? "");
   }
 
-  // Kaydetme butonuna basıldığında çalışan fonksiyon.
   void _saveForm() {
-    // Formdaki tüm alanların geçerli olup olmadığını kontrol eder (validate).
     if (_formKey.currentState!.validate()) {
       final unitPrice = double.parse(_unitPriceController.text);
       final taxRate = int.parse(_taxRateController.text);
 
-      // Ödevde istenen toplam fiyat (price) hesaplaması: unitPrice + KDV
       final totalPrice = unitPrice + (unitPrice * taxRate / 100);
 
-      // Yeni ürün nesnesini oluşturuyoruz.
       final newProduct = Product(
         barcodeNo: _barcodeController.text,
         productName: _nameController.text,
@@ -64,17 +54,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       final provider = context.read<ProductProvider>();
 
       if (widget.product == null) {
-        // Eğer ürün yoksa yeni ekleme yapıyoruz.
         provider.addProduct(newProduct).then((_) {
           Navigator.pop(context); // İşlem bitince geri dön.
         }).catchError((error) {
-          // Hata durumunda kullanıcıya bilgi veriyoruz (örn: Duplicate Barcode).
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Error: Barcode already exists!")),
           );
         });
       } else {
-        // Eğer ürün varsa güncelleme yapıyoruz.
         provider.updateProduct(newProduct).then((_) {
           Navigator.pop(context);
         });
@@ -86,19 +73,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Modu başlığa yansıtıyoruz.
         title: Text(widget.product == null ? "Add New Product" : "Edit Product"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        // Kullanıcı girişlerini yönetmek için Form widget'ı.
         child: Form(
           key: _formKey,
-          // Küçük ekranlarda taşmayı önlemek için kaydırılabilir alan.
           child: SingleChildScrollView(
             child: Column(
               children: [
-                // Barkod alanı: Düzenleme modunda değiştirilemez (disabled) olmalı.
                 TextFormField(
                   controller: _barcodeController,
                   enabled: widget.product == null,
@@ -140,7 +123,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Stok bilgisi opsiyonel (null olabilir).
                 TextFormField(
                   controller: _stockController,
                   keyboardType: TextInputType.number,
@@ -155,7 +137,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                // Kaydet ve İptal butonları.
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -181,7 +162,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   @override
   void dispose() {
-    // Bellek sızıntısını (memory leak) önlemek için controller nesnelerini temizliyoruz.
     _barcodeController.dispose();
     _nameController.dispose();
     _categoryController.dispose();

@@ -11,19 +11,16 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  // Arama çubuğu için controller
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Ekran açıldığında verileri yüklemesi için tetikliyoruz
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().loadProducts();
     });
   }
 
-  // Arama butonuna basıldığında çalışan mantık
   void _onSearch() async {
     final barcode = _searchController.text.trim();
     if (barcode.isEmpty) return;
@@ -31,7 +28,6 @@ class _MainScreenState extends State<MainScreen> {
     final provider = context.read<ProductProvider>();
     final foundProduct = await provider.searchProduct(barcode);
 
-    // Eğer ürün bulunamadıysa ödevde istenen diyaloğu gösteriyoruz
     if (foundProduct == null && mounted) {
       showDialog(
         context: context,
@@ -46,7 +42,6 @@ class _MainScreenState extends State<MainScreen> {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                // Yeni ekleme sayfasına barkodu göndererek gidiyoruz
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -73,7 +68,6 @@ class _MainScreenState extends State<MainScreen> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            // ÜST KISIM: Barkod Arama Formu
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -98,7 +92,6 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // ALT KISIM: Ürün Listesi (Grid Layout benzeri ListView)
             Expanded(
               child: Consumer<ProductProvider>(
                 builder: (context, provider, child) {
@@ -109,7 +102,6 @@ class _MainScreenState extends State<MainScreen> {
                     itemCount: provider.products.length,
                     itemBuilder: (context, index) {
                       final product = provider.products[index];
-                      // Aranan ürün mü kontrolü (Highlighting)
                       bool isHighlighted = provider.highlightedBarcode == product.barcodeNo;
 
                       return Card(
@@ -159,7 +151,6 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
-      // Sağ alttaki hızlı ekleme butonu
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -172,7 +163,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Silme onayı için Dialog gösterir
   void _confirmDelete(BuildContext context, String barcode) {
     showDialog(
       context: context,
